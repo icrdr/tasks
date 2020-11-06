@@ -1,10 +1,11 @@
 import { Context, Next } from "koa";
 import chalk from "chalk";
-import { transports, format, createLogger } from "winston";
+import { transports, format, createLogger, Logger } from "winston";
 import "winston-daily-rotate-file";
-import { config } from "./config";
+import { Config } from "./config";
 import { KoaMiddlewareInterface, Middleware } from "routing-controllers";
-
+import { Container } from "typedi";
+const config = new Config();
 const loggerContent = (isColored: boolean) => {
   return format.printf(({ timestamp, level, message, stack }) => {
     const prefix = `${chalk.gray(timestamp)} `;
@@ -42,7 +43,7 @@ const loggerContent = (isColored: boolean) => {
   });
 };
 
-export const logger = createLogger({
+const loggerOption = {
   level: config.logLevel,
   format: format.combine(
     format.timestamp({
@@ -63,25 +64,41 @@ export const logger = createLogger({
       format: format.combine(loggerContent(true)),
     }),
   ],
-});
+};
+export const logger = createLogger(loggerOption);
+
+export function InjectLogger() {
+  return function (object: Object, propertyName: string, index?: number) {
+    const logger = createLogger(loggerOption);
+    Container.registerHandler({
+      object,
+      propertyName,
+      index,
+      value: (containerInstance) => logger,
+    });
+  };
+}
 
 @Middleware({ type: "before" })
 export class requestLogger implements KoaMiddlewareInterface {
+  @InjectLogger()
+  logger!: Logger;
+
   async use(ctx: Context, next: Next) {
     const start = new Date().getTime();
     await next();
 
-    logger.debug(
+    this.logger.debug(
       `Request Body: \n${JSON.stringify(ctx.request.body, null, 2)}\
       `.replace(/\n/g, "\n                        ")
     );
-    logger.debug(
+    this.logger.debug(
       `Response Body: \n${JSON.stringify(ctx.response.body, null, 2)}\
       `.replace(/\n/g, "\n                        ")
     );
 
     const duration = new Date().getTime() - start;
-    logger.http(
+    this.logger.http(
       `${ctx.status} ${ctx.method} ${ctx.originalUrl} +${duration}ms`
     );
   }
@@ -89,6 +106,9 @@ export class requestLogger implements KoaMiddlewareInterface {
 
 @Middleware({ type: "before" })
 export class errorHandler implements KoaMiddlewareInterface {
+  @InjectLogger()
+  logger!: Logger;
+
   async use(ctx: Context, next: Next) {
     try {
       await next();
@@ -100,7 +120,7 @@ export class errorHandler implements KoaMiddlewareInterface {
       };
       if (error.errors) ctx.body["errors"] = error.errors;
       if (ctx.status >= 500) {
-        logger.error(error); // console error on terminal (winston)
+        this.logger.error(error); // console error on terminal (winston)
         // ctx.app.emit("error", error, ctx); // console error on terminal (official)
       }
     }

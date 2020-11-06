@@ -11,20 +11,39 @@ import {
   Authorized,
   CurrentUser,
 } from "routing-controllers";
-import { UserService } from "./user.service";
-import { AuthUserDTO, CreateUserDTO, GetUsersDTO } from "./user.dto";
+import { UserService } from "../user.service";
 import { Inject } from "typedi";
-import { currentUser } from "../interface";
+import { currentUser } from "../../common/common.interface";
+import { IsString, IsNumber } from "class-validator";
+import { InjectLogger } from "../../logger";
+import { Logger } from "winston";
+
+class CreateUserDTO {
+  @IsString()
+  username!: string;
+
+  @IsString()
+  password!: string;
+}
+
+class GetUsersDTO {
+  @IsNumber()
+  perPage!: number;
+
+  @IsNumber()
+  page!: number;
+}
 
 @JsonController("/users")
 export class UserController {
   @Inject()
-  userService!: UserService;
+  private userService!: UserService;
+  @InjectLogger()
+  private logger!:Logger
 
   @Authorized(["admin.user.browse", "common.user.browse"])
   @Get("/:id")
   async getUser(@CurrentUser() current: currentUser, @Param("id") id: number) {
-    console.log(current);
     const user = await this.userService.getUser(id);
     if (!user) throw new NotFoundError("User was not found.");
     return user;
@@ -57,19 +76,5 @@ export class UserController {
 
     await this.userService.deleteUser(id);
     return { message: "Deleted" };
-  }
-}
-
-@JsonController("/auth")
-export class AuthController {
-  @Inject()
-  userService!: UserService;
-
-  @Post()
-  async authUser(@Body() body: AuthUserDTO) {
-    const token = await this.userService.authUser(body.username, body.password);
-    if (!token) throw new NotFoundError("Auth Fail");
-
-    return { token: token };
   }
 }

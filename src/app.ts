@@ -4,18 +4,21 @@ import { Action, createKoaServer } from "routing-controllers";
 import { useContainer } from "routing-controllers";
 import { Container } from "typedi";
 import jwt from "jsonwebtoken";
-import { config } from "./config";
-import { currentUser } from "./interface";
+import { Config } from "./config";
+import { Utility } from "./common/common.service";
+import { tokenPayload, currentUser } from "./common/common.interface";
+const utility = Container.get(Utility);
+const config = Container.get(Config);
 
 const authorizationChecker = async (action: Action, roles: string[]) => {
   const token = action.request.headers["authorization"].split(" ")[1];
-  const decodedToken: any = jwt.verify(token, config.jwtSecret);
-  const ownedPermissions = decodedToken.permissions;
+  const decodedToken = jwt.verify(token, config.jwtSecret) as tokenPayload;
+  const ownedPerms = decodedToken.perms;
   const validated: string[] = [];
-  for (const neededPermission of roles) {
-    for (const ownedPermission of ownedPermissions) {
-      if (neededPermission.includes(ownedPermission)) {
-        validated.push(neededPermission);
+  for (const neededPerm of roles) {
+    for (const ownedPerm of ownedPerms) {
+      if (utility.stringMatch(neededPerm, ownedPerm)) {
+        validated.push(neededPerm);
         break; //break nested loop
       }
     }
@@ -24,7 +27,7 @@ const authorizationChecker = async (action: Action, roles: string[]) => {
 
   const currentUser: currentUser = {
     id: decodedToken.id,
-    permissions: validated,
+    perms: validated,
   };
   action.request.currentUser = currentUser;
 

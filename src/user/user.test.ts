@@ -2,7 +2,7 @@ import request from "supertest";
 import { createApp } from "../app";
 import Koa from "koa";
 import { createDb, DbDriver } from "../db";
-import { UserController } from "./user.controller";
+import { UserController } from "./user.controller/user.controller";
 import { User } from "./user.entity";
 
 describe("Test user controller", () => {

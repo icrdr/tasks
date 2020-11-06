@@ -1,5 +1,11 @@
 import { Exclude } from "class-transformer";
-import { Entity, Column, JoinTable, ManyToMany } from "typeorm";
+import {
+  Entity,
+  Column,
+  JoinTable,
+  ManyToMany,
+  DeleteDateColumn,
+} from "typeorm";
 import { BaseEntity } from "../common/common.entity";
 
 export enum UserGender {
@@ -38,6 +44,13 @@ export class User extends BaseEntity {
   @ManyToMany(() => Role, (role) => role.users)
   @JoinTable()
   roles!: Role[];
+
+  @ManyToMany(() => Perm, (perm) => perm.users)
+  @JoinTable()
+  perms!: Perm[];
+
+  @DeleteDateColumn()
+  deleteAt!: Date;
 }
 
 export enum ThirdAuthType {
@@ -79,4 +92,7 @@ export class Perm extends BaseEntity {
 
   @ManyToMany(() => Role, (role) => role.perms)
   roles!: Role[];
+
+  @ManyToMany(() => User, (user) => user.perms)
+  users!: User[];
 }
