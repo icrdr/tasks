@@ -1,13 +1,11 @@
-import { Perm, Role } from "../user.entity";
+import { Perm, Role } from "./user.entity";
 import { EntityManager } from "typeorm";
-import { Inject, Service } from "typedi";
+import { Service } from "typedi";
 import { InjectManager } from "typeorm-typedi-extensions";
-import { TypeGuard } from "../../common/common.service";
+import { isPermArray } from "../typeGuad";
 
 @Service("roleService")
 export class RoleService {
-  @Inject()
-  private typeGuard!: TypeGuard;
 
   @InjectManager()
   private manager!: EntityManager;
@@ -25,7 +23,7 @@ export class RoleService {
   }) {
     let _perms: Perm[] = [];
     if (!options.perms) {
-    } else if (!this.typeGuard.isPermArray(options.perms)) {
+    } else if (!isPermArray(options.perms)) {
       for (const identify of options.perms) {
         _perms.push((await this.loadPerm(identify))!);
       }

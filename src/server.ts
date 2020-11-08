@@ -1,15 +1,13 @@
-import { Config } from "./config";
 import { logger } from "./logger";
-
 import { createApp } from "./app";
 import { createDb } from "./db";
-import { Container } from "typedi";
 
-const config = Container.get(Config);
-
-createDb().then(() => {
+async function bootstrap(port: number) {
+  await createDb();
   logger.info("Successfully connect to database.");
   const app = createApp();
-  app.listen(config.port);
-  logger.info(`App started at port http://localhost:${config.port}`);
-});
+  app.listen(port);
+  logger.info(`App started at port http://localhost:${port}`);
+}
+
+bootstrap(3000);

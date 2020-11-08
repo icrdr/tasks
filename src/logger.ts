@@ -1,11 +1,12 @@
-import { Context, Next } from "koa";
 import chalk from "chalk";
 import { transports, format, createLogger, Logger } from "winston";
 import "winston-daily-rotate-file";
-import { Config } from "./config";
-import { KoaMiddlewareInterface, Middleware } from "routing-controllers";
+import { config } from "./config";
 import { Container } from "typedi";
-const config = new Config();
+import { Context, Next } from "koa";
+import { KoaMiddlewareInterface, Middleware } from "routing-controllers";
+
+
 const loggerContent = (isColored: boolean) => {
   return format.printf(({ timestamp, level, message, stack }) => {
     const prefix = `${chalk.gray(timestamp)} `;
@@ -67,7 +68,7 @@ const loggerOption = {
 };
 export const logger = createLogger(loggerOption);
 
-export function InjectLogger() {
+export const InjectLogger = () => {
   return function (object: Object, propertyName: string, index?: number) {
     const logger = createLogger(loggerOption);
     Container.registerHandler({
@@ -77,7 +78,7 @@ export function InjectLogger() {
       value: (containerInstance) => logger,
     });
   };
-}
+};
 
 @Middleware({ type: "before" })
 export class requestLogger implements KoaMiddlewareInterface {

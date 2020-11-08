@@ -1,14 +1,12 @@
 import "reflect-metadata";
-import { errorHandler, requestLogger } from "./logger";
 import { Action, createKoaServer } from "routing-controllers";
 import { useContainer } from "routing-controllers";
 import { Container } from "typedi";
 import jwt from "jsonwebtoken";
-import { Config } from "./config";
-import { Utility } from "./common/common.service";
 import { tokenPayload, currentUser } from "./common/common.interface";
-const utility = Container.get(Utility);
-const config = Container.get(Config);
+import { stringMatch } from "./utility";
+import { config } from "./config";
+import { requestLogger, errorHandler } from "./logger";
 
 const authorizationChecker = async (action: Action, roles: string[]) => {
   const token = action.request.headers["authorization"].split(" ")[1];
@@ -17,7 +15,7 @@ const authorizationChecker = async (action: Action, roles: string[]) => {
   const validated: string[] = [];
   for (const neededPerm of roles) {
     for (const ownedPerm of ownedPerms) {
-      if (utility.stringMatch(neededPerm, ownedPerm)) {
+      if (stringMatch(neededPerm, ownedPerm)) {
         validated.push(neededPerm);
         break; //break nested loop
       }

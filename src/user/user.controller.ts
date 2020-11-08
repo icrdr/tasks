@@ -11,11 +11,11 @@ import {
   Authorized,
   CurrentUser,
 } from "routing-controllers";
-import { UserService } from "../user.service";
+import { UserService } from "./user.service";
 import { Inject } from "typedi";
-import { currentUser } from "../../common/common.interface";
+import { currentUser } from "../common/common.interface";
 import { IsString, IsNumber } from "class-validator";
-import { InjectLogger } from "../../logger";
+import { InjectLogger } from "../logger";
 import { Logger } from "winston";
 
 class CreateUserDTO {
@@ -39,7 +39,7 @@ export class UserController {
   @Inject()
   private userService!: UserService;
   @InjectLogger()
-  private logger!:Logger
+  private logger!: Logger;
 
   @Authorized(["admin.user.browse", "common.user.browse"])
   @Get("/:id")

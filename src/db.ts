@@ -1,36 +1,23 @@
-import Container, { Inject, Service } from "typedi";
+import Container from "typedi";
 import { Connection, createConnection, useContainer } from "typeorm";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
-import { Config } from "./config";
-import { RoleService, UserService } from "./user/user.service";
+import { config } from "./config";
 import { internet } from "faker";
 import { OptionService } from "./option/option.service";
-import { InjectConnection } from "typeorm-typedi-extensions";
+import { RoleService } from "./user/role.service";
+import { UserService } from "./user/user.service";
 
-@Service()
 export class DbDriver {
-  @Inject()
-  private userService!: UserService;
-
-  @Inject()
-  private roleService!: RoleService;
-
-  @Inject()
-  private optionService!: OptionService;
-
-  connection: Connection;
-  // @InjectConnection()
-  // private connection!: Connection;
-  // config: Config;
-  @Inject()
-  private config!: Config;
+  userService!: UserService;
+  roleService!: RoleService;
+  optionService!: OptionService;
+  connection!: Connection;
 
   constructor(connection: Connection) {
     this.connection = connection;
-    // this.userService = Container.get(UserService);
-    // this.roleService = Container.get(RoleService);
-    // this.optionService = Container.get(OptionService);
-    // this.config = Container.get(Config);
+    this.userService = Container.get(UserService);
+    this.roleService = Container.get(RoleService);
+    this.optionService = Container.get(OptionService);
   }
 
   async createFakeUsers(number: number) {
@@ -51,25 +38,27 @@ export class DbDriver {
   }
 
   async createDefault() {
-    console.log(this.config);
     // create default options
-    for (const key in this.config.defaultOptions) {
-      const value: string = this.config.defaultOptions[key];
+    const defaultOptions = config.defaultOptions as { [key: string]: string };
+    const defaultRole = config.defaultRoles as { [key: string]: string[] };
+
+    for (const key in defaultOptions) {
+      const value: string = defaultOptions[key];
       await this.optionService.createOption(key, value);
     }
 
     // create default roles
-    for (const key in this.config.defaultRole) {
+    for (const key in defaultRole) {
       await this.roleService.createRole({
         name: key,
-        perms: this.config.defaultRole[key],
+        perms: defaultRole[key],
       });
     }
 
     //create default user (admin)
     await this.userService.createUser({
-      username: this.config.adminUsername,
-      password: this.config.adminPassword,
+      username: config.adminUsername,
+      password: config.adminPassword,
       roles: ["admin"],
     });
   }
@@ -87,7 +76,6 @@ export class DbDriver {
 export const createDb = async (entities?: Function[] | string[]) => {
   if (!entities) entities = [__dirname + "/**/*.entity.ts"];
   useContainer(Container);
-  const config = Container.get(Config);
   const connection = await createConnection({
     type: "mysql",
     port: 3306,

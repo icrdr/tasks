@@ -1,24 +1,19 @@
-import { Role, User } from "../user.entity";
+import { Role, User } from "./user.entity";
 import { EntityManager } from "typeorm";
 import { Inject, Service } from "typedi";
-import { OptionService } from "../../option/option.service";
+import { OptionService } from "../option/option.service";
 import { InjectManager } from "typeorm-typedi-extensions";
-import { TypeGuard, Utility } from "../../common/common.service";
-import { RoleService } from ".";
+import { RoleService } from "./role.service";
+import { isRoleArray } from "../typeGuad";
+import { hash } from "../utility";
 
 @Service()
 export class UserService {
   @Inject()
   private optionService!: OptionService;
 
-  @Inject(()=>RoleService)
+  @Inject(() => RoleService)
   private roleService!: RoleService;
-
-  @Inject()
-  private utility!: Utility;
-
-  @Inject()
-  private typeGuard!: TypeGuard;
 
   @InjectManager()
   private manager!: EntityManager;
@@ -49,7 +44,7 @@ export class UserService {
       const defaultRole = (await this.optionService.getOption("defaultRole"))!
         .value;
       _roles.push((await this.roleService.getRole(defaultRole))!);
-    } else if (!this.typeGuard.isRoleArray(options.roles)) {
+    } else if (!isRoleArray(options.roles)) {
       for (const identify of options.roles) {
         _roles.push((await this.roleService.getRole(identify))!);
       }
@@ -59,7 +54,7 @@ export class UserService {
 
     const user = new User();
     user.username = options.username;
-    user.password = this.utility.hash(options.username + options.password);
+    user.password = hash(options.username + options.password);
     if (options.fullName) user.fullName = options.fullName;
     if (options.email) user.email = options.email;
     if (options.mobile) user.mobile = options.mobile;

@@ -49,7 +49,7 @@
     "build": "tsc",
     "start": "export NODE_ENV=prod && node dist/server.js",
     "dev": "export NODE_ENV=dev && nodemon --watch src --ext ts,tsx --exec ts-node src/server.ts",
-    "db": "export NODE_ENV=dev && ts-node script/init_db.ts"
+    "db": "export NODE_ENV=dev && ts-node script/initDatabase.ts"
   },
   "keywords": [
     "koa"
