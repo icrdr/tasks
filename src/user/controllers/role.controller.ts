@@ -1,5 +1,5 @@
 import { JsonController } from "routing-controllers";
-import { RoleService } from "./role.service";
+import { RoleService } from "../services/role.service";
 import { Inject } from "typedi";
 
 @JsonController("/role")

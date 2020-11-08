@@ -1,5 +1,5 @@
 import { JsonController, Body, Post, NotFoundError } from "routing-controllers";
-import { AuthService } from "./auth.service";
+import { AuthService } from "../services/auth.service";
 import { Inject } from "typedi";
 import { IsString } from "class-validator";
 

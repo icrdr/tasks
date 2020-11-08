@@ -1,8 +1,8 @@
-import { Perm, Role } from "./user.entity";
+import { Perm, Role } from "../user.entity";
 import { EntityManager } from "typeorm";
 import { Service } from "typedi";
 import { InjectManager } from "typeorm-typedi-extensions";
-import { isPermArray } from "../typeGuad";
+import { isPermArray } from "../../typeGuad";
 
 @Service("roleService")
 export class RoleService {

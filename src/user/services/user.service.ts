@@ -1,11 +1,11 @@
-import { Role, User } from "./user.entity";
+import { Role, User } from "../user.entity";
 import { EntityManager } from "typeorm";
 import { Inject, Service } from "typedi";
-import { OptionService } from "../option/option.service";
+import { OptionService } from "../../option/option.service";
 import { InjectManager } from "typeorm-typedi-extensions";
 import { RoleService } from "./role.service";
-import { isRoleArray } from "../typeGuad";
-import { hash } from "../utility";
+import { isRoleArray } from "../../typeGuad";
+import { hash } from "../../utility";
 
 @Service()
 export class UserService {

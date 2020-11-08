@@ -1,11 +1,11 @@
-import { Perm, User } from "./user.entity";
+import { Perm, User } from "../user.entity";
 import { EntityManager } from "typeorm";
 import { Inject, Service } from "typedi";
 import jwt from "jsonwebtoken";
 import { InjectManager } from "typeorm-typedi-extensions";
-import { tokenPayload } from "../common/common.interface";
-import { hash } from "../utility";
-import { config } from "../config";
+import { tokenPayload } from "../../common/common.interface";
+import { hash } from "../../utility";
+import { config } from "../../config";
 
 @Service()
 export class AuthService {
